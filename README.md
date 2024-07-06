@@ -3,6 +3,11 @@
 
 ![example](https://github.com/leaxcx/blender-vmf-export/assets/172221284/cd51ab54-43ab-44c2-afdd-36ca676b6cbd)
 
+## Create more complex shapes
+
+![complex-shapes](https://github.com/leaxcx/blender-vmf-export/assets/172221284/6b565c32-1b5a-44e2-b225-2cbda0232b24)
+  
+
 ## How to install:
   1. Download/clone repository
   2. Open Blender project, go to a "Scripting" tab
@@ -66,3 +71,4 @@ Set "Clip End" to 10000 or more! It will improve visibility in Blender.
 There are some examples of test maps in folder called "files" (includes ".blend" and ".vmf" files"), so check it out if something gone wrong with it.
 
 Good luck! :)
+
