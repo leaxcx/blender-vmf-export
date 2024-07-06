@@ -21,11 +21,13 @@ Script for Blender to export your geometry to .vmf (Valve Map Format)
   4. Map should be made out of non-contiguous convex shapes! Unfortunately, what you're doing in Blender is still limited by BSP (Binary Space Partition) limits.
   5. No n-gons!
 
-(not nessesary, but life quality improver) In repository, there's a folder called "entities", at this point, there's only one there "info_player_start". It is a 1:1 scale reference model that allows you to easily scale your map to an actual Source Engine scale system.
+In repository, there's a folder called "entities", at this point, there's only one there "info_player_start". It is a 1:1 scale reference model that allows you to easily scale your map to an actual Source Engine scale system.
 
-     How to import "info_player_start":
-     1. "File" -> "Append..."
-     2. Choose "info_player_start reference.blend" -> "Object" -> "playerstart_reference"
+  How to import "info_player_start":
+   1. "File" -> "Append..."
+   2. Choose "info_player_start reference.blend" -> "Object" -> "playerstart_reference"
+
+Set "Clip End" to 10000 or more! It will improve visibility in Blender.
 
 ## How to export:
   1. Set filepath
@@ -40,7 +42,23 @@ Script for Blender to export your geometry to .vmf (Valve Map Format)
 
 ![exported-file](https://github.com/leaxcx/blender-vmf-export/assets/172221284/a542f7be-d7c0-4633-83cc-da067d3f6e7c)
 
+## Materials:
+  Every mesh that does not have materials, in Hammer, will have "dev/dev_blendmeasure", but, if you mesh has material that has name like this "path/materialname" then it will automatically set material you've typed in Hammer.
+  
+  Example:
+
+  ![material-example](https://github.com/leaxcx/blender-vmf-export/assets/172221284/749db8f1-423a-4cd5-b4fb-90f7cae7f265)
+
 ## Known issues:
   1. Geometry flips vertically when exports to .vmf. 
-    How to fix:
+    How to fix in Hammer:
+    1. "Edit" -> "Select All"
+    2. Press Ctrl+L or "Tools" -> "Flip Objects" -> "Horizontally"
+  2. No displacement support 
+  3. No manual entity placement support in Blender (will be fixed soon)
+  4. Fully rewrites file from scratch everytime you export it, so all entities/brushes you've placed in Hammer will be erased (also will be fixed soon)
+  5. No proper UV mapping support, basically, it sets all textures you have on "0.25" scale. (soon!)
 
+There are some examples of test maps in folder called "files" (includes ".blend" and ".vmf" files"), so check it out if something gone wrong with it.
+
+Good luck! :)
