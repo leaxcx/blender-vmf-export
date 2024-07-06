@@ -49,6 +49,13 @@ def write_vmf(filepath):
             if collection.name in [collection.name for collection in obj.users_collection]:
                 if obj.type == 'MESH':
                         id += 1
+                        apply_modifiers_to_obj(obj)
+                
+                        bpy.ops.object.select_all(action='DESELECT')
+                        obj.select_set(True)
+                        bpy.context.view_layer.objects.active = obj
+                
+                        separate_loose_parts(obj)
 
                         f.write('\tsolid\n\t{\n')
                         f.write('\t\t"id" "{}"\n'.format(id))
