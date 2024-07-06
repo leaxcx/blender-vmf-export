@@ -2,8 +2,8 @@ import bpy
 import math
 import mathutils
 
+# Apply all modifiers for the object
 def apply_modifiers_to_obj(obj):
-    # Apply all modifiers for the object
     for modifier in obj.modifiers:
         bpy.context.view_layer.objects.active = obj
         bpy.ops.object.modifier_apply(modifier=modifier.name)
@@ -14,6 +14,7 @@ def separate_loose_parts(obj):
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.separate(type='LOOSE')
     bpy.ops.object.mode_set(mode='OBJECT')
+    
 
 def write_vmf(filepath):
     scene = bpy.context.scene
@@ -24,6 +25,7 @@ def write_vmf(filepath):
     if not collection:
         print(f"Collection '{collection_name}' not found!")
         return
+    
 
     with open(filepath, 'w', encoding='utf-8') as f:
         id = 1
@@ -56,6 +58,7 @@ def write_vmf(filepath):
             if collection.name in [collection.name for collection in obj.users_collection]:
                 if obj.type == 'MESH':
                         id += 1
+                        
                         apply_modifiers_to_obj(obj)
                 
                         bpy.ops.object.select_all(action='DESELECT')
