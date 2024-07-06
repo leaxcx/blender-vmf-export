@@ -1,5 +1,7 @@
 # blender-vmf-export by leaxcx
-Script for Blender to export your geometry to .vmf (Valve Map Format)
+## Script for Blender to export your geometry to .vmf (Valve Map Format)
+
+![example](https://github.com/leaxcx/blender-vmf-export/assets/172221284/cd51ab54-43ab-44c2-afdd-36ca676b6cbd)
 
 ## How to install:
   1. Download/clone repository
