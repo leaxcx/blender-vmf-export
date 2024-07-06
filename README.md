@@ -21,9 +21,9 @@
      These are the ones that are supported now!
   2. Map still should be properly sealed! You're still making a Source Engine map!
   3. Making sky is still recommended to do in Hammer Editor, because there's no such a thing (yet) as "Make Hollow" function.
-  4. Map should be made out of non-contiguous convex shapes! Unfortunately, what you're doing in Blender is still limited by BSP (Binary Space Partition) limits.
+  4. Map should be made out of convex shapes! Unfortunately, what you're doing in Blender is still limited by BSP (Binary Space Partition) limits.
   5. No n-gons!
-  6. Automatically, sky texture is "sky_day01_01" you can change it at line 27.
+  6. Automatically, sky texture is set to "sky_day01_01" you can change it at line 27.
 
 In repository, there's a folder called "entities", at this point, there's only one there "info_player_start". It is a 1:1 scale reference model that allows you to easily scale your map to an actual Source Engine scale system.
 
