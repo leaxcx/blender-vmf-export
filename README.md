@@ -12,6 +12,7 @@
   At this point, you're pretty much done!
 
 ## How to make maps:
+  EVERY MESH YOU WANT TO IMPORT SHOULD BE IN COLLECTION "brushes"!!!
   1. Model your environment only with these shapes:
      1. Cube
      2. Icosphere
