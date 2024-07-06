@@ -7,6 +7,13 @@ def apply_modifiers_to_obj(obj):
     for modifier in obj.modifiers:
         bpy.context.view_layer.objects.active = obj
         bpy.ops.object.modifier_apply(modifier=modifier.name)
+        
+# Seperating loose parts of mesh
+def separate_loose_parts(obj):
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.separate(type='LOOSE')
+    bpy.ops.object.mode_set(mode='OBJECT')
 
 def write_vmf(filepath):
     scene = bpy.context.scene
