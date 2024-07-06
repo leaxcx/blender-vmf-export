@@ -62,7 +62,7 @@ Set "Clip End" to 10000 or more! It will improve visibility in Blender.
   1. Geometry flips vertically when exports to .vmf. 
     How to fix in Hammer:
     1. "Edit" -> "Select All"
-    2. Press Ctrl+L or "Tools" -> "Flip Objects" -> "Horizontally"
+    2. Press Ctrl+I or "Tools" -> "Flip Objects" -> "Vertically"
   2. No displacement support 
   3. No manual entity placement support in Blender (will be fixed soon)
   4. Fully rewrites file from scratch everytime you export it, so all entities/brushes you've placed in Hammer will be erased (also will be fixed soon)
