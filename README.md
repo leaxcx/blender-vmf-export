@@ -57,6 +57,11 @@ Set "Clip End" to 10000 or more! It will improve visibility in Blender.
 
   ![material-example](https://github.com/leaxcx/blender-vmf-export/assets/172221284/749db8f1-423a-4cd5-b4fb-90f7cae7f265)
 
+## UV scale:
+  If you want your mesh to use its actual UV scale, and not default scale "0.25", create a new custom parameter (integer) in Object Properties called "useMeshUV" and set it to 1.
+
+  ![useMeshUV-example](https://github.com/leaxcx/blender-vmf-export/assets/172221284/88084ec1-99fb-4ea9-b4d2-466caec2ff10)
+
 ## Known issues:
   1. Geometry flips vertically when exports to .vmf. 
     How to fix in Hammer:
@@ -70,4 +75,5 @@ Set "Clip End" to 10000 or more! It will improve visibility in Blender.
 There are some examples of test maps in folder called "files" (includes ".blend" and ".vmf" files"), so check it out if something gone wrong with it.
 
 Good luck! :)
+
 
