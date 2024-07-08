@@ -8,13 +8,35 @@ def apply_modifiers_to_obj(obj):
         bpy.context.view_layer.objects.active = obj
         bpy.ops.object.modifier_apply(modifier=modifier.name)
         
-# Seperating loose parts of mesh
+# Separate loose parts of the mesh
 def separate_loose_parts(obj):
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.separate(type='LOOSE')
     bpy.ops.object.mode_set(mode='OBJECT')
+
+def calculate_uv_scale(obj, mesh, face):
+    # Default UV scale
+    default_uv_scale = 0.25
     
+    # Check for custom property "useMeshUV"
+    if obj.get("useMeshUV") == 1:
+        if not mesh.uv_layers:
+            return default_uv_scale  # Use default UV scale if no UV map is present
+
+        uv_layer = mesh.uv_layers.active.data
+        uvs = [uv_layer[loop_index].uv for loop_index in face.loop_indices]
+
+        uv_width = max(uv.x for uv in uvs) - min(uv.x for uv in uvs)
+        uv_height = max(uv.y for uv in uvs) - min(uv.y for uv in uvs)
+
+        # Average scale
+        uv_scale = (uv_width + uv_height) / 2 if (uv_width + uv_height) > 0 else default_uv_scale
+        
+        return uv_scale
+    
+    # Use default scale if "useMeshUV" is not set to 1
+    return default_uv_scale
 
 def write_vmf(filepath):
     scene = bpy.context.scene
@@ -25,7 +47,6 @@ def write_vmf(filepath):
     if not collection:
         print(f"Collection '{collection_name}' not found!")
         return
-    
 
     with open(filepath, 'w', encoding='utf-8') as f:
         id = 1
@@ -57,80 +78,82 @@ def write_vmf(filepath):
                 
             if collection.name in [collection.name for collection in obj.users_collection]:
                 if obj.type == 'MESH':
+                    id += 1
+                        
+                    apply_modifiers_to_obj(obj)
+                
+                    bpy.ops.object.select_all(action='DESELECT')
+                    obj.select_set(True)
+                    bpy.context.view_layer.objects.active = obj
+                
+                    separate_loose_parts(obj)
+
+                    f.write('\tsolid\n\t{\n')
+                    f.write('\t\t"id" "{}"\n'.format(id))
+                        
+                    mesh = obj.data
+
+                    for face in mesh.polygons:
+                        f.write('\t\tside\n\t\t{\n')
                         id += 1
+                        f.write('\t\t\t"id" "{}"\n'.format(id))
+                            
+                        # Transform vertex coordinates to world space
+                        v1_world = obj.matrix_world @ mesh.vertices[face.vertices[0]].co
+                        v2_world = obj.matrix_world @ mesh.vertices[face.vertices[1]].co
+                        v3_world = obj.matrix_world @ mesh.vertices[face.vertices[2]].co
+
+                        # Convert Blender coordinates to Valve (x, -y, z)
+                        coords1 = (v1_world.x, -v1_world.y, v1_world.z)
+                        coords2 = (v2_world.x, -v2_world.y, v2_world.z)
+                        coords3 = (v3_world.x, -v3_world.y, v3_world.z)
+
+                        # Write plane in Valve format
+                        f.write('\t\t\t"plane" "({:.6f} {:.6f} {:.6f}) ({:.6f} {:.6f} {:.6f}) ({:.6f} {:.6f} {:.6f})"\n'.format(*coords1, *coords2, *coords3))
+                            
+                        # Write vertices_plus
+                        f.write('\t\t\tvertices_plus\n\t\t\t{\n')
+                        f.write('\t\t\t\t"v" "({:.6f} {:.6f} {:.6f})"\n'.format(*coords1))
+                        f.write('\t\t\t\t"v" "({:.6f} {:.6f} {:.6f})"\n'.format(*coords2))
+                        f.write('\t\t\t\t"v" "({:.6f} {:.6f} {:.6f})"\n'.format(*coords3))
+                        f.write('\t\t\t}\n')
+
+                        # Get the material name in uppercase
+                        material_name = "dev/dev_blendmeasure"  # Default material
+                        if obj.material_slots and face.material_index < len(obj.material_slots):
+                            material = obj.material_slots[face.material_index].material
+                            if material:
+                                material_name = material.name.upper()
+
+                        f.write('\t\t\t"material" "{}"\n'.format(material_name))
+                            
+                        # Calculate UV scale
+                        uv_scale = calculate_uv_scale(obj, mesh, face)
+                        normal = face.normal
+                        # If face is mostly vertical
+                        if abs(normal.z) < 0.1:  
+                            f.write('\t\t\t"uaxis" "[0 1 0 0] {:.6f}"\n'.format(uv_scale))
+                            f.write('\t\t\t"vaxis" "[0 0 -1 0] {:.6f}"\n'.format(uv_scale))
+                        # Horizontal
+                        else:  
+                            f.write('\t\t\t"uaxis" "[1 0 0 0] {:.6f}"\n'.format(uv_scale))
+                            f.write('\t\t\t"vaxis" "[0 -1 0 0] {:.6f}"\n'.format(uv_scale))
+                        # Left and right
+                        if abs(normal.y) > 0.9:  
+                            f.write('\t\t\t"uaxis" "[1 0 0 0] {:.6f}"\n'.format(uv_scale))
+                            f.write('\t\t\t"vaxis" "[0 0 -1 0] {:.6f}"\n'.format(uv_scale))
+                        f.write('\t\t\t"rotation" "0"\n')
+                        f.write('\t\t\t"lightmapscale" "16"\n')
+                        f.write('\t\t\t"smoothing_groups" "0"\n')
+                            
+                        f.write('\t\t}\n')
                         
-                        apply_modifiers_to_obj(obj)
-                
-                        bpy.ops.object.select_all(action='DESELECT')
-                        obj.select_set(True)
-                        bpy.context.view_layer.objects.active = obj
-                
-                        separate_loose_parts(obj)
-
-                        f.write('\tsolid\n\t{\n')
-                        f.write('\t\t"id" "{}"\n'.format(id))
-                        
-                        mesh = obj.data
-
-                        for face in mesh.polygons:
-                            f.write('\t\tside\n\t\t{\n')
-                            id += 1
-                            f.write('\t\t\t"id" "{}"\n'.format(id))
-                            
-                            # Transform vertex coordinates to world space
-                            v1_world = obj.matrix_world @ mesh.vertices[face.vertices[0]].co
-                            v2_world = obj.matrix_world @ mesh.vertices[face.vertices[1]].co
-                            v3_world = obj.matrix_world @ mesh.vertices[face.vertices[2]].co
-
-                            # Convert Blender coordinates to Valve (x, -y, z)
-                            coords1 = (v1_world.x, -v1_world.y, v1_world.z)
-                            coords2 = (v2_world.x, -v2_world.y, v2_world.z)
-                            coords3 = (v3_world.x, -v3_world.y, v3_world.z)
-
-                            # Write plane in Valve format
-                            f.write('\t\t\t"plane" "({:.6f} {:.6f} {:.6f}) ({:.6f} {:.6f} {:.6f}) ({:.6f} {:.6f} {:.6f})"\n'.format(*coords1, *coords2, *coords3))
-                            
-                            # Write vertices_plus
-                            f.write('\t\t\tvertices_plus\n\t\t\t{\n')
-                            f.write('\t\t\t\t"v" "({:.6f} {:.6f} {:.6f})"\n'.format(*coords1))
-                            f.write('\t\t\t\t"v" "({:.6f} {:.6f} {:.6f})"\n'.format(*coords2))
-                            f.write('\t\t\t\t"v" "({:.6f} {:.6f} {:.6f})"\n'.format(*coords3))
-                            f.write('\t\t\t}\n')
-
-                            # Get the material name in uppercase
-                            material_name = "dev/dev_blendmeasure"  # Default material
-                            if obj.material_slots and face.material_index < len(obj.material_slots):
-                                material = obj.material_slots[face.material_index].material
-                                if material:
-                                    material_name = material.name.upper()
-
-                            f.write('\t\t\t"material" "{}"\n'.format(material_name))
-                            
-                            # U and V axis fix
-                            normal = face.normal
-                            # If face is mostly vertical
-                            if abs(normal.z) < 0.1:  
-                                f.write('\t\t\t"uaxis" "[0 1 0 0] 0.25"\n')
-                                f.write('\t\t\t"vaxis" "[0 0 -1 0] 0.25"\n')
-                            # Horizontal
-                            else:  
-                                f.write('\t\t\t"uaxis" "[1 0 0 0] 0.25"\n')
-                                f.write('\t\t\t"vaxis" "[0 -1 0 0] 0.25"\n')
-                            # Left and right
-                            if abs(normal.y) > 0.9:  
-                                f.write('\t\t\t"uaxis" "[1 0 0 0] 0.25"\n')
-                                f.write('\t\t\t"vaxis" "[0 0 -1 0] 0.25"\n')
-                            f.write('\t\t\t"rotation" "0"\n')
-                            f.write('\t\t\t"lightmapscale" "16"\n')
-                            f.write('\t\t\t"smoothing_groups" "0"\n')
-                            
-                            f.write('\t\t}\n')
-                        
-                        f.write('\t}\n')
+                    f.write('\t}\n')
 
         f.write('}\n')
 
 # Set your filepath here
 if __name__ == "__main__":
-    filepath = r"E:/Projects/blender-vmf-export/files/.vmf/file1.vmf"
-    write_vmf(filepath) 
+    filepath = r"E:/yourpath/yourfilename.vmf"
+    write_vmf(filepath)
+
