@@ -70,7 +70,6 @@ Set "Clip End" to 10000 or more! It will improve visibility in Blender.
   2. No displacement support 
   3. No manual entity placement support in Blender (will be fixed soon)
   4. Fully rewrites file from scratch everytime you export it, so all entities/brushes you've placed in Hammer will be erased (also will be fixed soon)
-  5. No proper UV mapping support, basically, it sets all textures you have on "0.25" scale. (soon!)
 
 There are some examples of test maps in folder called "files" (includes ".blend" and ".vmf" files"), so check it out if something gone wrong with it.
 
