@@ -13,10 +13,23 @@
 
 ## How to install:
   1. Download/clone repository
-  2. Open Blender project, go to a "Scripting" tab
-  3. "Text" -> "Open..."
-  4. Open file "blender-vmf-export.py"
-     
+  2. Open Blender project, Go to the Edit menu at the top of the screen.
+  3. Select Preferences.
+  4. In the Preferences window, select the Add-ons tab on the left sidebar.
+  5. Click on the Install... button at the top of the window.
+  6. Open file "blender-vmf-export.py"
+
+  I also added "shortcut scripts", which is not nessesary, just life quality improvement:
+  1. "fast-material-picker.py" - creates additional panel with all materials in your scene with button "Assign to Selected Face". When your project has a lot of materials, it helps.
+
+     ![ui-materials](https://github.com/user-attachments/assets/098097e9-18d2-4d89-9bb4-6d475afe5801)
+
+  
+  3. "shortcut-convex.py" - creates additional panel with button "Make Mesh Convex" automatically makes mesh convex, which means ready for .vmf export.
+
+     ![ui-convex](https://github.com/user-attachments/assets/20866d4a-ad9b-41a6-96bc-85bac909361a)
+
+
   At this point, you're pretty much done!
 
 ## How to make maps:
@@ -29,8 +42,9 @@
      These are the ones that are supported now!
   2. Map still should be properly sealed! You're still making a Source Engine map!
   3. Making sky is still recommended to do in Hammer Editor, because there's no such a thing (yet) as "Make Hollow" function.
-  4. Map should be made out of convex shapes! Unfortunately, what you're doing in Blender is still limited by BSP (Binary Space Partition) limits.
-  5. Automatically, sky texture is set to "sky_day01_01" you can change it at line 27.
+  4. Map should be made out of convex shapes! Unfortunately, what you're doing in Blender is still limited by BSP limits.
+  5. Automatically, sky texture is set to "sky_day01_01" you should change it by hand in Hammer (soon).
+  6. Checkmark "Rename Objects to IDs" automatically names brushes as "brush_1", "brush_2", "brush_3", etc... Not nessesary, but i find it generally easier to manipulate geometry when it's sorted.
 
 In repository, there's a folder called "entities", at this point, there's only one there "info_player_start". It is a 1:1 scale reference model that allows you to easily scale your map to an actual Source Engine scale system.
 
