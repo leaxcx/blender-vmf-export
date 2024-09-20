@@ -1,9 +1,9 @@
 # blender-vmf-export by leaxcx
 ## Blender addon to make maps for Source Engine
 
-![ui-showcase](https://github.com/user-attachments/assets/0a4a5c43-6aa3-4710-9511-ae2669a822ff)
-
 ![example](https://github.com/leaxcx/blender-vmf-export/assets/172221284/cd51ab54-43ab-44c2-afdd-36ca676b6cbd)
+
+![ui-showcase](https://github.com/user-attachments/assets/0a4a5c43-6aa3-4710-9511-ae2669a822ff)
 
 
 ## Create more complex shapes
