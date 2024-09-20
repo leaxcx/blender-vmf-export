@@ -36,7 +36,7 @@ In repository, there's a folder called "entities", at this point, there's only o
 
   How to import "info_player_start":
    1. "File" -> "Append..."
-   2. Choose "info_player_start reference![ui-showcase](https://github.com/user-attachments/assets/65f660b5-b830-4c26-804f-8bece5d331e9)
+   2. Choose "info_player_start reference
 .blend" -> "Object" -> "playerstart_reference"
 
 Set "Clip End" to 10000 or more! It will improve visibility in Blender.
