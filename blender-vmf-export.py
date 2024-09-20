@@ -1,14 +1,18 @@
+bl_info = {
+    "name": "VMF Exporter",
+    "blender": (3, 6, 0),
+    "category": "Export",
+}
+
 import bpy
 import math
 import mathutils
 
-# Apply all modifiers for the object
 def apply_modifiers_to_obj(obj):
     for modifier in obj.modifiers:
         bpy.context.view_layer.objects.active = obj
         bpy.ops.object.modifier_apply(modifier=modifier.name)
         
-# Separate loose parts of the mesh
 def separate_loose_parts(obj):
     bpy.context.view_layer.objects.active = obj
     bpy.ops.object.mode_set(mode='EDIT')
@@ -16,13 +20,11 @@ def separate_loose_parts(obj):
     bpy.ops.object.mode_set(mode='OBJECT')
 
 def calculate_uv_scale(obj, mesh, face):
-    # Default UV scale
     default_uv_scale = 0.25
     
-    # Check for custom property "useMeshUV"
     if obj.get("useMeshUV") == 1:
         if not mesh.uv_layers:
-            return default_uv_scale  # Use default UV scale if no UV map is present
+            return default_uv_scale
 
         uv_layer = mesh.uv_layers.active.data
         uvs = [uv_layer[loop_index].uv for loop_index in face.loop_indices]
@@ -30,23 +32,40 @@ def calculate_uv_scale(obj, mesh, face):
         uv_width = max(uv.x for uv in uvs) - min(uv.x for uv in uvs)
         uv_height = max(uv.y for uv in uvs) - min(uv.y for uv in uvs)
 
-        # Average scale
         uv_scale = (uv_width + uv_height) / 2 if (uv_width + uv_height) > 0 else default_uv_scale
         
         return uv_scale
     
-    # Use default scale if "useMeshUV" is not set to 1
     return default_uv_scale
 
-def write_vmf(filepath):
+def rename_objects_in_collection(collection, start_id):
+    id = start_id
+    for obj in collection.objects:
+        if obj.type == 'MESH':
+            obj.name = f"brush_{id}"
+            id += 1
+
+class ExportVMFOperator(bpy.types.Operator):
+    bl_idname = "export.vmf"
+    bl_label = "Export VMF"
+    bl_options = {'REGISTER', 'UNDO'}
+    
+    def execute(self, context):
+        settings = context.scene.vmf_export_settings
+        write_vmf(settings.filepath, rename_objects=settings.rename_objects)
+        return {'FINISHED'}
+
+def write_vmf(filepath, rename_objects):
     scene = bpy.context.scene
     
     collection_name = "brushes"
-    # Add all of your geometry to "brushes" collection or it will not be ported!
     collection = bpy.data.collections.get(collection_name)
     if not collection:
         print(f"Collection '{collection_name}' not found!")
         return
+
+    if rename_objects:
+        rename_objects_in_collection(collection, start_id=1)
 
     with open(filepath, 'w', encoding='utf-8') as f:
         id = 1
@@ -61,17 +80,13 @@ def write_vmf(filepath):
         f.write('\t"mapversion" "68"\n')
         f.write('\t"classname" "worldspawn"\n')
 
-        for obj in scene.objects:
-            # WIP: entities are not supported yet!
+        for obj in bpy.context.scene.objects:
             if obj.type == 'EMPTY':
                 id += 1
                 f.write('\tentity\n\t{\n')
                 f.write('\t\t"id" "{}"\n'.format(id))
-                # Find origin
                 f.write('\t\t"origin" "{} {} {}"\n'.format(*obj.location)) 
-                # Find angles
                 f.write('\t\t"angles" "{} {} {}"\n'.format(*obj.rotation_euler)) 
-                # If name of entity you placed in Blender is:
                 if obj.name == "info_player_start":
                     f.write('\t\t"classname" "info_player_start"\n')
                 f.write('\t}\n')
@@ -98,28 +113,23 @@ def write_vmf(filepath):
                         id += 1
                         f.write('\t\t\t"id" "{}"\n'.format(id))
                             
-                        # Transform vertex coordinates to world space
                         v1_world = obj.matrix_world @ mesh.vertices[face.vertices[0]].co
                         v2_world = obj.matrix_world @ mesh.vertices[face.vertices[1]].co
                         v3_world = obj.matrix_world @ mesh.vertices[face.vertices[2]].co
 
-                        # Convert Blender coordinates to Valve (x, -y, z)
                         coords1 = (v1_world.x, -v1_world.y, v1_world.z)
                         coords2 = (v2_world.x, -v2_world.y, v2_world.z)
                         coords3 = (v3_world.x, -v3_world.y, v3_world.z)
 
-                        # Write plane in Valve format
                         f.write('\t\t\t"plane" "({:.6f} {:.6f} {:.6f}) ({:.6f} {:.6f} {:.6f}) ({:.6f} {:.6f} {:.6f})"\n'.format(*coords1, *coords2, *coords3))
                             
-                        # Write vertices_plus
                         f.write('\t\t\tvertices_plus\n\t\t\t{\n')
                         f.write('\t\t\t\t"v" "({:.6f} {:.6f} {:.6f})"\n'.format(*coords1))
                         f.write('\t\t\t\t"v" "({:.6f} {:.6f} {:.6f})"\n'.format(*coords2))
                         f.write('\t\t\t\t"v" "({:.6f} {:.6f} {:.6f})"\n'.format(*coords3))
                         f.write('\t\t\t}\n')
 
-                        # Get the material name in uppercase
-                        material_name = "dev/dev_blendmeasure"  # Default material
+                        material_name = "dev/dev_blendmeasure"
                         if obj.material_slots and face.material_index < len(obj.material_slots):
                             material = obj.material_slots[face.material_index].material
                             if material:
@@ -127,19 +137,15 @@ def write_vmf(filepath):
 
                         f.write('\t\t\t"material" "{}"\n'.format(material_name))
                             
-                        # Calculate UV scale
                         uv_scale = calculate_uv_scale(obj, mesh, face)
                         normal = face.normal
-                        # If face is mostly vertical
-                        if abs(normal.z) < 0.1:  
+                        if abs(normal.z) < 0.1:
                             f.write('\t\t\t"uaxis" "[0 1 0 0] {:.6f}"\n'.format(uv_scale))
                             f.write('\t\t\t"vaxis" "[0 0 -1 0] {:.6f}"\n'.format(uv_scale))
-                        # Horizontal
-                        else:  
+                        else:
                             f.write('\t\t\t"uaxis" "[1 0 0 0] {:.6f}"\n'.format(uv_scale))
                             f.write('\t\t\t"vaxis" "[0 -1 0 0] {:.6f}"\n'.format(uv_scale))
-                        # Left and right
-                        if abs(normal.y) > 0.9:  
+                        if abs(normal.y) > 0.9:
                             f.write('\t\t\t"uaxis" "[1 0 0 0] {:.6f}"\n'.format(uv_scale))
                             f.write('\t\t\t"vaxis" "[0 0 -1 0] {:.6f}"\n'.format(uv_scale))
                         f.write('\t\t\t"rotation" "0"\n')
@@ -152,8 +158,46 @@ def write_vmf(filepath):
 
         f.write('}\n')
 
-# Set your filepath here
+class VMFExportSettings(bpy.types.PropertyGroup):
+    filepath: bpy.props.StringProperty(
+        name="File Path",
+        description="Path to save the VMF file",
+        default="//",
+        subtype='FILE_PATH'
+    )
+    rename_objects: bpy.props.BoolProperty(
+        name="Rename Objects to ID",
+        description="Rename objects in the collection 'brushes' to their ID",
+        default=True
+    )
+
+class VMFExportPanel(bpy.types.Panel):
+    bl_label = "Export Scene to VMF"
+    bl_idname = "PT_VMF_Export"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'Level Editor'
+
+    def draw(self, context):
+        layout = self.layout
+        settings = context.scene.vmf_export_settings
+
+        layout.prop(settings, "filepath")
+        layout.prop(settings, "rename_objects")
+        layout.operator("export.vmf", text="Export VMF")
+
+def register():
+    bpy.utils.register_class(ExportVMFOperator)
+    bpy.utils.register_class(VMFExportSettings)
+    bpy.utils.register_class(VMFExportPanel)
+    bpy.types.Scene.vmf_export_settings = bpy.props.PointerProperty(type=VMFExportSettings)
+
+def unregister():
+    bpy.utils.unregister_class(ExportVMFOperator)
+    bpy.utils.unregister_class(VMFExportSettings)
+    bpy.utils.unregister_class(VMFExportPanel)
+    del bpy.types.Scene.vmf_export_settings
+
 if __name__ == "__main__":
-    filepath = r"E:/yourpath/yourfilename.vmf"
-    write_vmf(filepath)
+    register()
 
