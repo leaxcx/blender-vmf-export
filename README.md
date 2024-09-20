@@ -42,13 +42,11 @@ In repository, there's a folder called "entities", at this point, there's only o
 Set "Clip End" to 10000 or more! It will improve visibility in Blender.
 
 ## How to export:
-  1. Set filepath
+  1. Set filepath (with yourfilename.vmf in the end)
      
-![filepath-here](https://github.com/leaxcx/blender-vmf-export/assets/172221284/8736c61c-fe24-4b5f-8df0-95fb80c97fa3)
+![ui-export](https://github.com/user-attachments/assets/a44f90e5-3924-4133-8c2f-16e6760bf2df)
 
-  2. Press "Run Script" button
-  
-![play-button](https://github.com/leaxcx/blender-vmf-export/assets/172221284/c31934da-ea8d-4c7c-a1d7-e62843d61090)
+  2. Press "Export VMF" button
 
   3. Done!
 
