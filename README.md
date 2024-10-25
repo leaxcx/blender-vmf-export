@@ -19,7 +19,7 @@
   5. Click on the Install... button at the top of the window.
   6. Open file "blender-vmf-export.py"
 
-  I also added "shortcut scripts", which is not nessesary, just life quality improvement:
+  I also added "shortcut addoms", which is not nessesary to install, just life quality improvement things:
   1. "fast-material-picker.py" - creates additional panel with all materials in your scene with button "Assign to Selected Face". When your project has a lot of materials, it helps.
 
      ![ui-materials](https://github.com/user-attachments/assets/098097e9-18d2-4d89-9bb4-6d475afe5801)
